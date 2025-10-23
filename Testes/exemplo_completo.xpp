@@ -1,0 +1,14 @@
+// Teste simples de palavras-chave e tokens
+class Teste {
+    int x = 10;
+    float y = 20;
+    string nome = "João";
+    
+    def main() {
+        if (x >= 10) {
+            print("Maior ou igual");
+        } else {
+            return 0;
+        }
+    }
+}

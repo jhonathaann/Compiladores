@@ -1,0 +1,3 @@
+int x = 10;
+/* Este comentário nunca fecha.
+int y = 20;

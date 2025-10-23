@@ -1,0 +1,4 @@
+// Testando todos os operadores e separadores restantes
+a = b + c - d * e / f % g;
+objeto.metodo();
+array[1, 2];

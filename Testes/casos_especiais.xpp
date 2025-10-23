@@ -1,0 +1,3 @@
+string _id_valido = "a=b; //teste";
+string s2 = ""; // string vazia
+int var1_com_num2;
