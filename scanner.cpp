@@ -44,6 +44,10 @@ int Scanner::isKeyword(string lexeme)
     if (lexeme == "read") return READ;
     if (lexeme == "main") return MAIN;
     if (lexeme == "extends") return EXTENDS;
+    if (lexeme == "constructor") return CONSTRUCTOR;
+    if (lexeme == "for") return FOR;
+    if (lexeme == "break") return BREAK;
+    if (lexeme == "super") return SUPER;
     return ID;
 }
 
@@ -161,8 +165,8 @@ Token* Scanner::nextToken()
         pos++; // Pula a aspas inicial
         
         while (pos < input.length() && input[pos] != '"' && input[pos] != '\n') {
-            lexeme += input[pos];
-            pos++;
+            lexeme += input[pos]; 
+            pos++; 
         }
         
         // verifica se a string foi fechada corretamente

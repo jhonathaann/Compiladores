@@ -27,6 +27,10 @@ enum Names
     READ,               // 'read'
     MAIN,               // 'main'
     EXTENDS,            // 'extends'
+    CONSTRUCTOR,        // 'constructor'
+    FOR,                // 'for'
+    BREAK,              // 'break'
+    SUPER,              // 'super'
     END_OF_FILE         // marca o fim do arquivo de entrada
 };
 
@@ -52,6 +56,10 @@ inline string tokenNameToString(Names name)
         case READ: return "READ";
         case MAIN: return "MAIN";
         case EXTENDS: return "EXTENDS";
+        case CONSTRUCTOR: return "CONSTRUCTOR";
+        case FOR: return "FOR";
+        case BREAK: return "BREAK";
+        case SUPER: return "SUPER";
         case END_OF_FILE: return "END_OF_FILE";
         default: return "UNDEF";
     }

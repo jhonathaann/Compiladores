@@ -21,9 +21,12 @@ class Parser{
         void varDeclListOpt();
         void varDeclList();
         void varDecl();
+        void varDeclOpt();
 
         void constructDeclListOpt();
         void methodDeclListOpt();
+
+        void type();
 
 
         void error(string);

@@ -76,7 +76,7 @@ void
 Parser::classBody(){
 
     // espera-se "{"
-    if(lToken->name == SEP && lToken->lexeme != "{"){
+    if(lToken->name == SEP && lToken->lexeme == "{"){
         match(SEP); // consome o "{"
     }else{
         error("esperado '{' para iniciar corpo da classe");
@@ -112,6 +112,75 @@ Parser::varDeclList(){
 
     while(lToken->name == ID || lToken->name == STRING || lToken->name == INT){
         varDecl();
+    }
+}
+
+// 7
+void
+Parser::varDecl(){
+    type(); // consome o tipo (int, string ou ID)
+
+    // verifica se eh um vetor
+    if(lToken->name == SEP && lToken->lexeme == "["){
+        match(SEP); // consome o "["
+
+        // na sequencia esse cara deve ser fechado
+        if(lToken->name == SEP && lToken->lexeme == "]"){
+            match(SEP); // consome o "]"
+        }else{
+            error("esperado o ']' apos o '[' na declaracao do vetor");
+        }
+    }
+
+    // espera um ID
+    if(lToken->name == ID){
+        match(ID); // consome o ID
+    }else{
+        error("esperado um Identificador ID na declaracao da variavel");
+    }
+
+    varDeclListOpt();
+
+    // espera um ';'
+    if(lToken->name == SEP && lToken->lexeme == ";"){
+        match(SEP);  // consome o ;
+    }else{
+        error("esperado um ';' ao final da declaracao da variavel");
+    }
+}
+
+// void 8
+void
+Parser::varDeclOpt(){
+
+    if(lToken->name == SEP && lToken->lexeme == ","){
+        match(SEP); // consome a ','
+
+        if(lToken->name == ID){
+            match(ID); // consome o ID
+            varDeclOpt();  // chama recursivamente
+        }else{
+            error("esperado identificador após ',' na declaracao de variavel");
+        }
+    }else{
+        ; // produz palavra vazia
+    }
+}
+
+// 9 type --> INT | STRING | ID
+void
+Parser::type(){
+
+    if(lToken->name == INT){
+        match(INT); // consome o INT
+    }
+    else if(lToken->name == STRING){
+        match(STRING);  // consome a STRING
+    }
+    else if(lToken->name == ID){
+        match(ID);  // consome o ID
+    }else{
+        error("esperado tipo: INT, ID ou STRING");
     }
 }
 
