@@ -184,6 +184,52 @@ Parser::type(){
     }
 }
 
+// 10
+void
+Parser::constructDeclListOpt(){
+
+    if(lToken->name == CONSTRUCTOR){
+        constructDeclList();
+    }else{
+        ; // produz a palavra vazia
+    }
+}
+
+// 11
+void
+Parser::constructDeclList(){
+    
+    while(lToken->name == CONSTRUCTOR){
+        constructDecl();
+    }
+}
+
+// 12
+void
+Parser::constructDecl(){
+    // constructor MethodBody
+    
+    match(CONSTRUCTOR);  // consome o token 'constructor'
+    methodBody();        // processa o corpo do construtor
+}
+
+// 13
+void
+Parser::methodDeclListOpt(){
+    
+    // verifica se o proximo token pode inciar uma declaracao de metodo (int, string ou ID)
+    if(lToken->name == INT || lToken->name == STRING || lToken->name == ID){
+        methodDeclList();
+    }else{
+        ; // produz a palavra vazia
+    }
+}
+
+// 14
+void
+Parser::methodDeclList(){
+
+}
 
 void
 Parser::error(string str)
