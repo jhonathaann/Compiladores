@@ -29,7 +29,12 @@ class Parser{
 
         void methodDeclListOpt();
         void methodDeclList();
+        void methodDecl();
         void methodBody();
+
+        void ParamListOpt();
+        
+        void StatementsOpt();
 
         void type();
 

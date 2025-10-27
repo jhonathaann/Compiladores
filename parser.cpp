@@ -110,6 +110,7 @@ Parser::varDeclListOpt(){
 void
 Parser::varDeclList(){
 
+    // enquanto o proximo token pode iniciar uma declaracao de variavel
     while(lToken->name == ID || lToken->name == STRING || lToken->name == INT){
         varDecl();
     }
@@ -229,6 +230,76 @@ Parser::methodDeclListOpt(){
 void
 Parser::methodDeclList(){
 
+    // enquanto o proximo token pode iniciar uma declaracao de metodo
+    while(lToken->name == INT || lToken->name == STRING || lToken->name == ID){
+        methodDecl();
+    }
+}
+
+// 15
+void
+Parser::methodDecl(){
+    // Type ID MethodBody | Type [] ID MethodBody
+    
+    // consome o tipo (int, string ou ID)
+    type();
+
+    // verifica se eh um vetor
+    if(lToken->name == SEP && lToken->lexeme == "["){
+        match(SEP); // consome o "["
+
+        // esse colchete deve ser fechado
+        if(lToken->name == SEP && lToken->lexeme == "]"){
+            match(SEP); // consome o "]"
+        }else{
+            error("esperado o ']' apos o '[' na declaracao do vetor");
+        }
+    }
+
+    // espera um ID
+    if(lToken->name == ID){
+        match(ID); // ✅ CORRIGIDO - agora consome ID corretamente
+    }else{
+        error("esperado um Identificador ID na declaracao de metodo");
+    }
+
+    methodBody();
+}
+
+// 16
+void
+Parser::methodBody(){
+    
+    // espera-se "("
+    if(lToken->name == SEP && lToken->lexeme == "("){
+        match(SEP);  // consome o "("
+    }else{
+        error("esperado '(' para abrir os parametros da funcao");
+    }
+
+    ParamListOpt();
+
+    if(lToken->name == SEP && lToken->lexeme == ")"){
+        match(SEP); // consome o ")"
+    }else{
+        error("esperado o ')' para fechar os parametros da funcao");
+    }
+    
+    // espera-se "{"
+    if(lToken->name == SEP && lToken->lexeme == "{"){
+        match(SEP);  // consome o "{"
+    }else{
+        error("esperado '{' para abrir o corpo do metodo");
+    }
+    
+    StatementsOpt();
+    
+    // espera-se "}"
+    if(lToken->name == SEP && lToken->lexeme == "}"){
+        match(SEP);  // consome o "}"
+    }else{
+        error("esperado '}' para fechar o corpo do metodo");
+    }
 }
 
 void
