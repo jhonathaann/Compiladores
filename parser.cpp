@@ -302,6 +302,175 @@ Parser::methodBody(){
     }
 }
 
+// 17
+void
+Parser::ParamListOpt(){
+
+    if(lToken->name == INT || lToken->name == STRING || lToken->name == ID){
+        ParamList();
+    }else{
+        ; // produz a palavra vazia
+    }
+}
+
+// 18
+void
+Parser::ParamList(){
+    // processa o primeiro parametro
+    Param();
+    
+    // processa os proximos parametros, separados por virgula
+    while(lToken->name == SEP && lToken->lexeme == ","){
+        match(SEP);  // consome a ","
+        Param();     // consome o proximo parametro
+    }
+}
+
+// 19
+void
+Parser::Param(){
+    type(); // consome o tipo (int, string ou ID)
+
+    // verifica se eh um vetor
+    if(lToken->name == SEP && lToken->lexeme == "["){
+        match(SEP); // consome o '['
+
+        // verifica se esse colchete eh fechado
+        if(lToken->name == SEP && lToken->lexeme == "]"){
+            match(SEP);  // consome o ']'
+        }else{
+            error("esperado o ']' apos o '[' na declaracao do vetor");
+        }
+    }
+
+    // espera um ID
+    if(lToken->name == ID){
+        match(ID); // consome o ID
+    }else{
+        error("esperado um identificador ID de tipo na declaracao da variavel vetor");
+    }
+}
+
+// 20
+void
+Parser::StatementsOpt(){
+    
+    // verifica se o proximo token pode iniciar uma declaracao (statement)
+    if(lToken->name == INT || lToken->name == STRING || lToken->name == ID ||
+       lToken->name == PRINT || lToken->name == READ || lToken->name == RETURN ||
+       lToken->name == SUPER || lToken->name == IF || lToken->name == FOR ||
+       lToken->name == BREAK || (lToken->name == SEP && lToken->lexeme == ";")){
+        Statements();
+    }
+    else{
+        ; // produz a palavra vazia
+    }
+
+}
+
+// 21
+void
+Parser::Statements(){
+
+    Statement();
+    
+    // processa as proximas declarações (statement)
+    while(lToken->name == INT || lToken->name == STRING || lToken->name == ID ||
+          lToken->name == PRINT || lToken->name == READ || lToken->name == RETURN ||
+          lToken->name == SUPER || lToken->name == IF || lToken->name == FOR ||
+          lToken->name == BREAK || (lToken->name == SEP && lToken->lexeme == ";")){
+        Statement();
+    }
+}
+
+// 22
+void
+Parser::Statement(){
+    // verifica declaracao de variavel (int x; ou string y;)
+    if(lToken->name == INT || lToken->name == STRING){
+        varDeclList();
+    }
+
+    // ID pode ser: declaracao de variavel customizada (Pessoa p;) OU atribuicao (x = 10;)
+    // precisamos diferenciar pelo contexto
+    else if(lToken->name == ID){
+        // Para simplificar, vamos assumir que é AtribStat
+        // (em um parser mais robusto, faríamos lookahead mais sofisticado)
+        AtribStat();
+        
+        // AtribStat termina com ;
+        if(lToken->name == SEP && lToken->lexeme == ";"){
+            match(SEP);
+        }else{
+            error("esperado ';' após atribuição");
+        }
+    }
+    else if(lToken->name == PRINT){
+        PrintStat();
+
+        // PrintStat termina com ;
+        if(lToken->name == SEP && lToken->lexeme == ";"){
+            match(SEP);
+        }else{
+            error("esperado ';' apos o print");
+        }
+
+    }
+    else if(lToken->name == READ){
+        ReadStat();
+        
+        // ReadStat termina com ;
+        if(lToken->name == SEP && lToken->lexeme == ";"){
+            match(SEP);
+        }else{
+            error("esperado ';' após read");
+        }
+    }
+    else if(lToken->name == RETURN){
+        ReturnStat();
+        
+        // ReturnStat termina com ;
+        if(lToken->name == SEP && lToken->lexeme == ";"){
+            match(SEP);
+        }else{
+            error("esperado ';' após return");
+        }
+    }
+    else if(lToken->name == SUPER){
+        SuperStat();
+        
+        // SuperStat termina com ;
+        if(lToken->name == SEP && lToken->lexeme == ";"){
+            match(SEP);
+        }else{
+            error("esperado ';' após super");
+        }
+    }
+    else if(lToken->name == IF){
+        IfStat();  // IF não termina com ;
+    }
+    else if(lToken->name == FOR){
+        ForStat();  // FOR não termina com ; (
+    }
+    else if(lToken->name == BREAK){
+        match(BREAK);
+        
+        // break termina com ;
+        if(lToken->name == SEP && lToken->lexeme == ";"){
+            match(SEP);
+        }else{
+            error("esperado ';' após break");
+        }
+    }
+    else if(lToken->name == SEP && lToken->lexeme == ";"){
+        match(SEP);  // statement vazio (só um ponto e vírgula)
+    }
+    else{
+        error("declaracao (statement) invalida");
+    }
+}
+
+
 void
 Parser::error(string str)
 {

@@ -33,8 +33,20 @@ class Parser{
         void methodBody();
 
         void ParamListOpt();
+        void ParamList();
+        void Param();
         
         void StatementsOpt();
+        void Statements();
+        void Statement();
+
+        void AtribStat();
+        void PrintStat();
+        void ReadStat();
+        void ReturnStat();
+        void SuperStat();
+        void IfStat();
+        void ForStat();
 
         void type();
 
