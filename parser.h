@@ -40,13 +40,24 @@ class Parser{
         void Statements();
         void Statement();
 
+        void AtribStatOpt();
         void AtribStat();
+
         void PrintStat();
         void ReadStat();
         void ReturnStat();
         void SuperStat();
         void IfStat();
         void ForStat();
+
+        void LValue();
+
+        void AllocExpression();
+        void Expression();
+
+        void ExpressionOpt();
+
+        void ArgListOpt();
 
         void type();
 

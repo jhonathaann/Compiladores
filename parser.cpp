@@ -470,6 +470,117 @@ Parser::Statement(){
     }
 }
 
+// 23
+void
+Parser::AtribStat(){
+
+}
+
+// 24
+void
+Parser::PrintStat(){
+    // nao eh necessario fazer um if pois quem chamou PrintStat ja verificou que eh PRINT
+    match(PRINT);
+    Expression();
+}
+
+// 25
+void
+Parser::ReadStat(){
+    match(READ);
+    LValue();
+}
+
+// 26
+void
+Parser::ReturnStat(){
+    match(RETURN);
+    Expression();
+}
+
+// 27
+void
+Parser::SuperStat(){
+    match(SUPER);
+    
+    if(lToken->name == SEP && lToken->lexeme == "("){
+        match(SEP); // consome "("
+    }else{
+        error("esperado '(' depois de super");
+    }
+    
+    ArgListOpt();
+    
+    if(lToken->name == SEP && lToken->lexeme == ")"){
+        match(SEP); // consome ")"
+    }else{
+        error("esperado ')' ao final dos argumentos de super");
+    }
+}
+
+// 28
+void
+Parser::IfStat(){
+
+}
+
+// 29
+void
+Parser::ForStat(){
+   
+    match(FOR);
+    
+    // espera '('
+    if(lToken->name == SEP && lToken->lexeme == "("){
+        match(SEP);
+    }else{
+        error("esperado '(' após for");
+    }
+    
+    AtribStatOpt();
+    
+    // espera primeiro ';'
+    if(lToken->name == SEP && lToken->lexeme == ";"){
+        match(SEP);
+    }else{
+        error("esperado ';' no primeiro campo do for");
+    }
+    
+    ExpressionOpt();
+    
+    // espera segundo ';'
+    if(lToken->name == SEP && lToken->lexeme == ";"){
+        match(SEP);
+    }else{
+        error("esperado ';' no segundo campo do for");
+    }
+    
+    AtribStatOpt();
+    
+    // espera ')'
+    if(lToken->name == SEP && lToken->lexeme == ")"){
+        match(SEP);
+    }else{
+        error("esperado ')' após cabeçalho do for");
+    }
+    
+    // espera '{'
+    if(lToken->name == SEP && lToken->lexeme == "{"){
+        match(SEP);
+    }else{
+        error("esperado '{' para iniciar corpo do for");
+    }
+    
+    StatementsOpt();
+    
+    // espera '}'
+    if(lToken->name == SEP && lToken->lexeme == "}"){
+        match(SEP);
+    }else{
+        error("esperado '}' para fechar corpo do for"); 
+    }
+}
+
 
 void
 Parser::error(string str)
