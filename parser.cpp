@@ -1,5 +1,6 @@
 #include "parser.h"
 
+// criando o objeto scanner (da analise lexica)
 Parser::Parser(string input){
 
     scanner = new Scanner(input);
@@ -109,9 +110,13 @@ Parser::varDeclListOpt(){
 // 6
 void
 Parser::varDeclList(){
-
-    // enquanto o proximo token pode iniciar uma declaracao de variavel
-    while(lToken->name == ID || lToken->name == STRING || lToken->name == INT){
+    // Processa a primeira declaração de variável
+    varDecl();
+    
+    // Continua processando APENAS se o próximo token for INT ou STRING
+    // (tipos primitivos, sem ambiguidade)
+    // ID pode ser tanto declaração quanto atribuição, então não processamos aqui
+    while(lToken->name == INT || lToken->name == STRING){
         varDecl();
     }
 }
@@ -140,7 +145,7 @@ Parser::varDecl(){
         error("esperado um Identificador ID na declaracao da variavel");
     }
 
-    varDeclListOpt();
+    varDeclOpt();  // ✅ CORRIGIDO - agora chama varDeclOpt em vez de varDeclListOpt
 
     // espera um ';'
     if(lToken->name == SEP && lToken->lexeme == ";"){
@@ -218,8 +223,8 @@ Parser::constructDecl(){
 void
 Parser::methodDeclListOpt(){
     
-    // verifica se o proximo token pode inciar uma declaracao de metodo (int, string ou ID)
-    if(lToken->name == INT || lToken->name == STRING || lToken->name == ID){
+    // verifica se o proximo token pode inciar uma declaracao de metodo (int, string, ID ou def)
+    if(lToken->name == INT || lToken->name == STRING || lToken->name == ID || lToken->name == DEF){
         methodDeclList();
     }else{
         ; // produz a palavra vazia
@@ -230,8 +235,8 @@ Parser::methodDeclListOpt(){
 void
 Parser::methodDeclList(){
 
-    // enquanto o proximo token pode iniciar uma declaracao de metodo
-    while(lToken->name == INT || lToken->name == STRING || lToken->name == ID){
+    // enquanto o proximo token pode iniciar uma declaracao de metodo (int, string, ID ou def)
+    while(lToken->name == INT || lToken->name == STRING || lToken->name == ID || lToken->name == DEF){
         methodDecl();
     }
 }
@@ -239,26 +244,31 @@ Parser::methodDeclList(){
 // 15
 void
 Parser::methodDecl(){
-    // Type ID MethodBody | Type [] ID MethodBody
     
-    // consome o tipo (int, string ou ID)
-    type();
+    // verifica se é um metodo sem tipo de retorno (def)
+    if(lToken->name == DEF){
+        match(DEF); // consome 'def'
+    }
+    else{
+        // consome o tipo (int, string ou ID)
+        type();
 
-    // verifica se eh um vetor
-    if(lToken->name == SEP && lToken->lexeme == "["){
-        match(SEP); // consome o "["
+        // verifica se eh um vetor
+        if(lToken->name == SEP && lToken->lexeme == "["){
+            match(SEP); // consome o "["
 
-        // esse colchete deve ser fechado
-        if(lToken->name == SEP && lToken->lexeme == "]"){
-            match(SEP); // consome o "]"
-        }else{
-            error("esperado o ']' apos o '[' na declaracao do vetor");
+            // esse colchete deve ser fechado
+            if(lToken->name == SEP && lToken->lexeme == "]"){
+                match(SEP); // consome o "]"
+            }else{
+                error("esperado o ']' apos o '[' na declaracao do vetor");
+            }
         }
     }
 
     // espera um ID
     if(lToken->name == ID){
-        match(ID); // ✅ CORRIGIDO - agora consome ID corretamente
+        match(ID); // consome o ID do metodo
     }else{
         error("esperado um Identificador ID na declaracao de metodo");
     }
@@ -386,16 +396,14 @@ Parser::Statements(){
 // 22
 void
 Parser::Statement(){
-    // verifica declaracao de variavel (int x; ou string y;)
+    // verifica declaracao de variavel com tipo primitivo (int x; ou string y;)
     if(lToken->name == INT || lToken->name == STRING){
-        varDeclList();
+        varDecl();  // processa uma declaracao
     }
 
     // ID pode ser: declaracao de variavel customizada (Pessoa p;) OU atribuicao (x = 10;)
     // precisamos diferenciar pelo contexto
     else if(lToken->name == ID){
-        // Para simplificar, vamos assumir que é AtribStat
-        // (em um parser mais robusto, faríamos lookahead mais sofisticado)
         AtribStat();
         
         // AtribStat termina com ;
@@ -450,7 +458,7 @@ Parser::Statement(){
         IfStat();  // IF não termina com ;
     }
     else if(lToken->name == FOR){
-        ForStat();  // FOR não termina com ; (
+        ForStat();  // FOR não termina com ;
     }
     else if(lToken->name == BREAK){
         match(BREAK);
@@ -654,7 +662,42 @@ Parser::ForStat(){
 // 30
 void
 Parser::AtribStatOpt(){
-    if(lToken->name == ID){
+    
+    if(lToken->name == INT || lToken->name == STRING){
+        // é uma declaracao de variavel com inicializacao
+        type(); // consome o tipo (int, string ou ID)
+
+        // verifica se eh um vetor
+        if(lToken->name == SEP && lToken->lexeme == "["){
+            match(SEP); // consome o "["
+            if(lToken->name == SEP && lToken->lexeme == "]"){
+                match(SEP); // consome o "]"
+            }else{
+                error("esperado o ']' apos o '[' na declaracao do vetor");
+            }
+        }
+
+        // espera um ID
+        if(lToken->name == ID){
+            match(ID); // consome o ID
+        }else{
+            error("esperado um Identificador ID na declaracao da variavel");
+        }
+
+        // verifica se tem inicialização (= expr)
+        if(lToken->name == OP && lToken->lexeme == "="){
+            match(OP);
+            
+            // verifica se é AllocExpression ou Expression
+            if(lToken->name == NEW || lToken->name == INT || lToken->name == STRING){
+                AllocExpression();
+            }
+            else{
+                Expression();
+            }
+        }
+    }
+    else if(lToken->name == ID){
         AtribStat();
     }
     else{
@@ -738,6 +781,174 @@ Parser::LValueComp(){
         ; // produz palavra vazia
     }
 }
+
+// 34
+void
+Parser::Expression(){
+    NumExpression();
+    
+    // verifica se ha um operador relacional
+    if(lToken->name == OP && (lToken->lexeme == "<" || lToken->lexeme == ">" || 
+                               lToken->lexeme == "<=" || lToken->lexeme == ">=" ||
+                               lToken->lexeme == "==" || lToken->lexeme == "!=")){
+        match(OP); // consome o operador relacional (terminal)
+        NumExpression();
+    }
+}
+
+// 35
+void
+Parser::AllocExpression(){
+    
+    if(lToken->name == NEW){
+        match(NEW); // consome 'new'
+        
+        if(lToken->name == ID){
+            match(ID); // consome o ID da classe
+        }else{
+            error("esperado identificador após 'new'");
+        }
+        
+        // espera '('
+        if(lToken->name == SEP && lToken->lexeme == "("){
+            match(SEP);
+        }else{
+            error("esperado '(' após identificador em 'new'");
+        }
+        
+        ArgListOpt();
+        
+        // espera ')'
+        if(lToken->name == SEP && lToken->lexeme == ")"){
+            match(SEP);
+        }else{
+            error("esperado ')' ao final dos argumentos de 'new'");
+        }
+    }
+    else if(lToken->name == INT || lToken->name == STRING || lToken->name == ID){
+        type(); // consome o tipo
+        
+        // espera '['
+        if(lToken->name == SEP && lToken->lexeme == "["){
+            match(SEP);
+        }else{
+            error("esperado '[' após tipo na alocação de array");
+        }
+        
+        Expression();
+        
+        // espera ']'
+        if(lToken->name == SEP && lToken->lexeme == "]"){
+            match(SEP);
+        }else{
+            error("esperado ']' ao final da expressão de alocação de array");
+        }
+    }
+    else{
+        error("esperado 'new' ou tipo na expressao de alocaçao");
+    }
+}
+
+// 36
+void
+Parser::NumExpression(){
+    Term();
+    
+    if(lToken->name == OP && (lToken->lexeme == "+" || lToken->lexeme == "-")){
+        match(OP); // consome o operador
+        Term();
+    }
+}
+
+// 37
+void
+Parser::Term(){
+    UnaryExpression();
+    
+    if(lToken->name == OP && (lToken->lexeme == "*" || lToken->lexeme == "/" || lToken->lexeme == "%")){
+        match(OP); // consome o operador
+        UnaryExpression();
+    }
+}
+
+// 38
+void
+Parser::UnaryExpression(){
+    
+    if(lToken->name == OP && (lToken->lexeme == "+" || lToken->lexeme == "-")){
+        match(OP); // consome o operador unario
+        UnaryExpression();
+    }
+    else{
+        Factor();
+    }
+}
+
+// 39
+void
+Parser::Factor(){
+    
+    if(lToken->name == INTEGER_LITERAL){
+        match(INTEGER_LITERAL);
+    }
+    else if(lToken->name == STRING_LITERAL){
+        match(STRING_LITERAL);
+    }
+    else if(lToken->name == ID){
+        LValue();
+        
+        if(lToken->name == SEP && lToken->lexeme == "("){
+            match(SEP); // consome '('
+            ArgListOpt();
+            
+            if(lToken->name == SEP && lToken->lexeme == ")"){
+                match(SEP); // consome ')'
+            }else{
+                error("esperado ')' ao final dos argumentos");
+            }
+        }
+    }
+    else if(lToken->name == SEP && lToken->lexeme == "("){
+        match(SEP); // consome '('
+        Expression();
+        
+        if(lToken->name == SEP && lToken->lexeme == ")"){
+            match(SEP); // consome ')'
+        }else{
+            error("esperado ')' após expressão");
+        }
+    }
+    else{
+        error("fator inválido em expressão");
+    }
+}
+
+// 40
+void
+Parser::ArgListOpt(){
+
+    if(lToken->name == ID || lToken->name == INTEGER_LITERAL || lToken->name == STRING_LITERAL ||
+       (lToken->name == OP && (lToken->lexeme == "+" || lToken->lexeme == "-")) ||
+       (lToken->name == SEP && lToken->lexeme == "(")){
+        ArgList();
+    }
+    else{
+        ; // produz palavra vazia
+    }
+}
+
+// 41
+void
+Parser::ArgList(){
+    Expression();
+    
+    // processa os proximos, separados por virgula
+    while(lToken->name == SEP && lToken->lexeme == ","){
+        match(SEP); // consome a ','
+        Expression();
+    }
+}
+
 void
 Parser::error(string str)
 {

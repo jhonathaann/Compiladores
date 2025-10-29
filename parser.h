@@ -54,14 +54,18 @@ class Parser{
         void LValue();
 
         void AllocExpression();
+        void NumExpression();
+        void ExpressionOpt();
         void Expression();
 
-        void ExpressionOpt();
-
+        void Term();
+        void UnaryExpression();
+        void Factor();
+        
         void ArgListOpt();
+        void ArgList();
 
         void type();
-
 
         void error(string);
 

@@ -1,0 +1,8 @@
+class Teste{
+    
+
+    int getX() {
+        return x;
+    }
+
+}

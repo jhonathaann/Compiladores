@@ -1,0 +1,23 @@
+class Calculadora {
+    int resultado;
+    
+    constructor() {
+        resultado = 0;
+    }
+    
+    int calcular() {
+        int a;
+        int b;
+        int c;
+        
+        a = 10;
+        b = 20;
+        c = a + b * 2;
+        
+        if (c > 30) {
+            resultado = c - 10;
+        }
+        
+        return resultado;
+    }
+}

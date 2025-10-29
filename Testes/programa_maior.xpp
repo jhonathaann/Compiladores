@@ -1,0 +1,42 @@
+class Pessoa {
+    string nome;
+    int idade;
+    
+    constructor(string n, int i) {
+        nome = n;
+        idade = i;
+    }
+    
+    int getIdade() {
+        return idade;
+    }
+    
+    def exibirInfo() {
+        print nome;
+        print idade;
+    }
+}
+
+class Aluno extends Pessoa {
+    int matricula;
+    
+    constructor(string n, int i, int m) {
+        super(n, i);
+        matricula = m;
+    }
+    
+    def estudar() {
+        int horas;
+        horas = 5;
+        
+        if (horas > 3) {
+            print "Estudou muito";
+        } else {
+            print "Precisa estudar mais";
+        }
+        
+        for (int i = 0; i < 10; i = i + 1) {
+            print i;
+        }
+    }
+}

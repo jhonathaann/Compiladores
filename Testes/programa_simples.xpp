@@ -1,0 +1,11 @@
+class MinhaClasse {
+    int x;
+    
+    constructor() {
+        x = 10;
+    }
+    
+    int getX() {
+        return x;
+    }
+}

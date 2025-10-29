@@ -1,4 +1,4 @@
-#include "scanner.h"
+#include "parser.h"
 
 
 int main(int argc, char* argv[]) 
@@ -7,29 +7,18 @@ int main(int argc, char* argv[])
     // O programa espera receber exatamente um argumento: o nome do arquivo fonte
     if (argc != 2)
     {
-        cout << "Uso: ./compiler nome_arquivo.xpp\n";
-        cout << "Exemplo: ./compiler programa.xpp\n";
+        cout << "Uso: ./xpp_compiler nome_arquivo.xpp\n";
+        cout << "Exemplo: ./xpp_compiler programa.xpp\n";
         return 1;
     }
 
-
-    // O construtor do Scanner abre o arquivo e lê todo seu conteúdo
-    Scanner* scanner = new Scanner(argv[1]);
+    // cria o parser, que por sua vez criar o scanner dentro
+    Parser* parser = new Parser(argv[1]);
     
-    Token* currentToken;
+    // inicia a analise sintatica
+    parser->run();
     
-
-    do
-    {
-        // extrai o proximo token da entrada
-        currentToken = scanner->nextToken();
-        
-        cout << "Linha: " << scanner->getLine() << ", Tipo: " << tokenNameToString((Names)currentToken->name)
-            << ", Lexema: '" << currentToken->lexeme << "'" << endl;
-             
-    } while (currentToken->name != END_OF_FILE);
-
-    delete scanner;
+    delete parser;
     
     return 0; 
 }
