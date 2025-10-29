@@ -473,7 +473,23 @@ Parser::Statement(){
 // 23
 void
 Parser::AtribStat(){
-
+    LValue();
+    
+    // espera operador de atribuição '='
+    if(lToken->name == OP && lToken->lexeme == "="){
+        match(OP);
+    }else{
+        error("esperado '=' na atribuição");
+    }
+    
+    // verifica se é AllocExpression (new ID ou Type[)
+    if(lToken->name == NEW || lToken->name == INT || lToken->name == STRING){
+        AllocExpression();
+    }
+    else{
+        // cc, é apenas uma expressao normal
+        Expression();
+    }
 }
 
 // 24
@@ -521,7 +537,61 @@ Parser::SuperStat(){
 // 28
 void
 Parser::IfStat(){
+    
+    match(IF);
 
+    // espera um '('
+    if(lToken->name == SEP && lToken->lexeme == "("){
+        match(SEP);
+    }else{
+        error("esperado '(' após if");
+    }
+
+    Expression();
+
+    // espera um ')'
+    if(lToken->name == SEP && lToken->lexeme == ")"){
+        match(SEP);
+    }else{
+        error("esperado ')' após expressão do if");
+    }
+
+    // espera um '{'
+    if(lToken->name == SEP && lToken->lexeme == "{"){
+        match(SEP);
+    }else{
+        error("esperado '{' para iniciar corpo do if");
+    }
+
+    StatementsOpt(); 
+
+    // espera um '}'
+    if(lToken->name == SEP && lToken->lexeme == "}"){
+        match(SEP);
+    }else{
+        error("esperado '}' para fechar corpo do if");
+    }
+    
+    // verifica se tem else
+    if(lToken->name == ELSE){
+        match(ELSE);
+        
+        // espera um '{'
+        if(lToken->name == SEP && lToken->lexeme == "{"){
+            match(SEP);
+        }else{
+            error("esperado '{' para iniciar corpo do else");
+        }
+        
+        StatementsOpt();
+        
+        // espera um '}'
+        if(lToken->name == SEP && lToken->lexeme == "}"){
+            match(SEP);
+        }else{
+            error("esperado '}' para fechar corpo do else");
+        }
+    }
 }
 
 // 29
@@ -581,7 +651,93 @@ Parser::ForStat(){
     }
 }
 
+// 30
+void
+Parser::AtribStatOpt(){
+    if(lToken->name == ID){
+        AtribStat();
+    }
+    else{
+        ; // produz palavra vazia
+    }
+}
 
+// 31
+void
+Parser::ExpressionOpt(){
+    if(lToken->name == ID || lToken->name == INTEGER_LITERAL || lToken->name == STRING_LITERAL || 
+       (lToken->name == OP && (lToken->lexeme == "+" || lToken->lexeme == "-")) ||
+       (lToken->name == SEP && lToken->lexeme == "(")){
+        Expression();
+    }
+    else{
+        ; // produz palavra vazia 
+    }
+}
+
+// 32
+void
+Parser::LValue(){
+    match(ID);
+    LValueComp();
+}
+
+// 33
+void
+Parser::LValueComp(){
+
+    if(lToken->name == SEP && lToken->lexeme == "."){
+        match(SEP); // consome o '.'
+        
+        if(lToken->name == ID){
+            match(ID); // consome o ID
+        }else{
+            error("esperado identificador apos '.'");
+        }
+        
+        // verifica se eh um vetor
+        if(lToken->name == SEP && lToken->lexeme == "["){
+            match(SEP); // consome '['
+            Expression();
+            
+            if(lToken->name == SEP && lToken->lexeme == "]"){
+                match(SEP); // consome ']'
+            }else{
+                error("esperado ']' apos a expressao");
+            }
+        }
+        // verifica se é chamada de metodo
+        else if(lToken->name == SEP && lToken->lexeme == "("){
+            match(SEP); // consome '('
+            ArgListOpt();
+            
+            if(lToken->name == SEP && lToken->lexeme == ")"){
+                match(SEP); // consome ')'
+            }else{
+                error("esperado ')' após argumentos");
+            }
+        }
+        
+        // continua recursivamente
+        LValueComp();
+    }
+    else if(lToken->name == SEP && lToken->lexeme == "["){
+        match(SEP); // consome '['
+        Expression();
+        
+        if(lToken->name == SEP && lToken->lexeme == "]"){
+            match(SEP); // consome ']'
+        }else{
+            error("esperado ']' após expressão do indice");
+        }
+        
+        // continua recursivamente
+        LValueComp();
+    }
+    else{
+        ; // produz palavra vazia
+    }
+}
 void
 Parser::error(string str)
 {

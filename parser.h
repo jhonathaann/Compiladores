@@ -50,6 +50,7 @@ class Parser{
         void IfStat();
         void ForStat();
 
+        void LValueComp();
         void LValue();
 
         void AllocExpression();
