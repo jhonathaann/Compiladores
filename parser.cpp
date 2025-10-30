@@ -2,7 +2,8 @@
 
 // criando o objeto scanner (da analise lexica)
 Parser::Parser(string input){
-
+    currentST = globalST = new SymbolTable();
+    initSimbolTable(); // Inicializa a tabela de símbolos com as palavras reservadas
     scanner = new Scanner(input);
 }
 
@@ -34,6 +35,66 @@ Parser::run(){
     cout << "compilacao encerrada com sucesso!\n";
 }
 
+// tabela de simbolos. essa tabela armazena todas as palavras reservadas da linguagem
+void
+Parser::initSimbolTable(){
+    Token* t;
+    
+    t = new Token(CLASS, "class");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(INT, "int");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(FLOAT, "float");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(STRING, "string");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(IF, "if");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(ELSE, "else");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(WHILE, "while");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(DEF, "def");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(NEW, "new");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(RETURN, "return");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(PRINT, "print");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(READ, "read");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(MAIN, "main");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(EXTENDS, "extends");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(CONSTRUCTOR, "constructor");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(FOR, "for");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(BREAK, "break");
+    globalST->add(new STEntry(t, true));
+    
+    t = new Token(SUPER, "super");
+    globalST->add(new STEntry(t, true));
+}
+
 // 1
 void 
 Parser::program(){
@@ -56,13 +117,11 @@ Parser::program(){
 // 2
 void
 Parser::classList(){
-    // a primeira producao é sempre ClassDecl
-    classDecl();
-
-    // verifica se o proximo token tbm inicia uma classe
-    while(lToken->name == CLASS){
-        classList();
-    }
+	do
+	{
+		classDecl();
+	}
+	while(lToken->name == CLASS);
 }
 
 // 3

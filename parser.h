@@ -4,6 +4,8 @@ class Parser{
     private:
         Scanner* scanner;
         Token* lToken;  // l --> lookahead
+        SymbolTable* globalST;
+        SymbolTable* currentST;
 
         void advance();
         void match(int);  // verifica se o token passado como parametro (atual) casa com alguma producao da gramatica
@@ -68,5 +70,6 @@ class Parser{
         void type();
 
         void error(string);
+        void initSimbolTable();
 
 };
