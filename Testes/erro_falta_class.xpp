@@ -1,0 +1,8 @@
+// erro: palavra-chave 'class' ausente
+Teste {
+    int x;
+    
+    constructor() {
+        x = 10;
+    }
+}

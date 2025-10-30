@@ -1,8 +1,8 @@
 class Teste{
     
+    int a(){
+        int b;
 
-    int getX() {
-        return x;
     }
 
 }

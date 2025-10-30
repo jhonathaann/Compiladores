@@ -1,0 +1,10 @@
+// erro: falta parentese de fechamento no if
+class Teste {
+    int x;
+    
+    def testar() {
+        if (x > 10 {
+            print "maior";
+        }
+    }
+}

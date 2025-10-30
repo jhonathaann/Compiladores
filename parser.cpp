@@ -26,6 +26,11 @@ Parser::run(){
 
     program();
 
+    // verifica se ja chegou ao final do arquivo
+    if(lToken->name != END_OF_FILE){
+        error("esperado fim de arquivo, mas encontrou tokens apos o final do programa");
+    }
+
     cout << "compilacao encerrada com sucesso!\n";
 }
 
@@ -36,9 +41,15 @@ Parser::program(){
     if(lToken->name == CLASS){
         // chama a producao ClassList
         classList();
-    }else{
-        // produz palavra vazia
+    }
+    else if(lToken->name == END_OF_FILE){
+        // Programa vazio (arquivo vazio) - aceita épsilon
         ;
+    }
+    else{
+        // Token inesperado no início do programa
+        // Programa deve começar com 'class' ou estar vazio
+        error("esperado 'class' para iniciar declaracao de classe ou arquivo vazio");
     }
 }
 
@@ -110,13 +121,11 @@ Parser::varDeclListOpt(){
 // 6
 void
 Parser::varDeclList(){
-    // Processa a primeira declaração de variável
-    varDecl();
+    // Tenta processar declarações de variáveis
+    // Continua enquanto encontrar INT, STRING ou ID
+    // MAS: se encontrar um padrão de método (Type ID '('), para
     
-    // Continua processando APENAS se o próximo token for INT ou STRING
-    // (tipos primitivos, sem ambiguidade)
-    // ID pode ser tanto declaração quanto atribuição, então não processamos aqui
-    while(lToken->name == INT || lToken->name == STRING){
+    while(lToken->name == INT || lToken->name == STRING || lToken->name == ID){
         varDecl();
     }
 }
@@ -145,7 +154,7 @@ Parser::varDecl(){
         error("esperado um Identificador ID na declaracao da variavel");
     }
 
-    varDeclOpt();  // ✅ CORRIGIDO - agora chama varDeclOpt em vez de varDeclListOpt
+    varDeclOpt();  // processa declaracoes separadas por virgula
 
     // espera um ';'
     if(lToken->name == SEP && lToken->lexeme == ";"){
@@ -166,7 +175,7 @@ Parser::varDeclOpt(){
             match(ID); // consome o ID
             varDeclOpt();  // chama recursivamente
         }else{
-            error("esperado identificador após ',' na declaracao de variavel");
+            error("esperado identificador apos ',' na declaracao de variavel");
         }
     }else{
         ; // produz palavra vazia
@@ -410,7 +419,7 @@ Parser::Statement(){
         if(lToken->name == SEP && lToken->lexeme == ";"){
             match(SEP);
         }else{
-            error("esperado ';' após atribuição");
+            error("esperado ';' apos atribuicao");
         }
     }
     else if(lToken->name == PRINT){
@@ -431,7 +440,7 @@ Parser::Statement(){
         if(lToken->name == SEP && lToken->lexeme == ";"){
             match(SEP);
         }else{
-            error("esperado ';' após read");
+            error("esperado ';' apos read");
         }
     }
     else if(lToken->name == RETURN){
@@ -441,7 +450,7 @@ Parser::Statement(){
         if(lToken->name == SEP && lToken->lexeme == ";"){
             match(SEP);
         }else{
-            error("esperado ';' após return");
+            error("esperado ';' apos return");
         }
     }
     else if(lToken->name == SUPER){
@@ -451,7 +460,7 @@ Parser::Statement(){
         if(lToken->name == SEP && lToken->lexeme == ";"){
             match(SEP);
         }else{
-            error("esperado ';' após super");
+            error("esperado ';' apos super");
         }
     }
     else if(lToken->name == IF){
@@ -467,7 +476,7 @@ Parser::Statement(){
         if(lToken->name == SEP && lToken->lexeme == ";"){
             match(SEP);
         }else{
-            error("esperado ';' após break");
+            error("esperado ';' apos break");
         }
     }
     else if(lToken->name == SEP && lToken->lexeme == ";"){
@@ -487,7 +496,7 @@ Parser::AtribStat(){
     if(lToken->name == OP && lToken->lexeme == "="){
         match(OP);
     }else{
-        error("esperado '=' na atribuição");
+        error("esperado '=' na atribuicao");
     }
     
     // verifica se é AllocExpression (new ID ou Type[)
@@ -552,7 +561,7 @@ Parser::IfStat(){
     if(lToken->name == SEP && lToken->lexeme == "("){
         match(SEP);
     }else{
-        error("esperado '(' após if");
+        error("esperado '(' apos if");
     }
 
     Expression();
@@ -561,7 +570,7 @@ Parser::IfStat(){
     if(lToken->name == SEP && lToken->lexeme == ")"){
         match(SEP);
     }else{
-        error("esperado ')' após expressão do if");
+        error("esperado ')' apos expressao do if");
     }
 
     // espera um '{'
@@ -612,7 +621,7 @@ Parser::ForStat(){
     if(lToken->name == SEP && lToken->lexeme == "("){
         match(SEP);
     }else{
-        error("esperado '(' após for");
+        error("esperado '(' apos for");
     }
     
     AtribStatOpt();
@@ -639,7 +648,7 @@ Parser::ForStat(){
     if(lToken->name == SEP && lToken->lexeme == ")"){
         match(SEP);
     }else{
-        error("esperado ')' após cabeçalho do for");
+        error("esperado ')' apos cabecalho do for");
     }
     
     // espera '{'
@@ -757,7 +766,7 @@ Parser::LValueComp(){
             if(lToken->name == SEP && lToken->lexeme == ")"){
                 match(SEP); // consome ')'
             }else{
-                error("esperado ')' após argumentos");
+                error("esperado ')' apos argumentos");
             }
         }
         
@@ -771,7 +780,7 @@ Parser::LValueComp(){
         if(lToken->name == SEP && lToken->lexeme == "]"){
             match(SEP); // consome ']'
         }else{
-            error("esperado ']' após expressão do indice");
+            error("esperado ']' apos expressao do indice");
         }
         
         // continua recursivamente
@@ -806,14 +815,14 @@ Parser::AllocExpression(){
         if(lToken->name == ID){
             match(ID); // consome o ID da classe
         }else{
-            error("esperado identificador após 'new'");
+            error("esperado identificador apos 'new'");
         }
         
         // espera '('
         if(lToken->name == SEP && lToken->lexeme == "("){
             match(SEP);
         }else{
-            error("esperado '(' após identificador em 'new'");
+            error("esperado '(' apos identificador em 'new'");
         }
         
         ArgListOpt();
@@ -832,7 +841,7 @@ Parser::AllocExpression(){
         if(lToken->name == SEP && lToken->lexeme == "["){
             match(SEP);
         }else{
-            error("esperado '[' após tipo na alocação de array");
+            error("esperado '[' apos tipo na alocacao de array");
         }
         
         Expression();
@@ -841,7 +850,7 @@ Parser::AllocExpression(){
         if(lToken->name == SEP && lToken->lexeme == "]"){
             match(SEP);
         }else{
-            error("esperado ']' ao final da expressão de alocação de array");
+            error("esperado ']' ao final da expressao de alocacao de array");
         }
     }
     else{
@@ -915,11 +924,11 @@ Parser::Factor(){
         if(lToken->name == SEP && lToken->lexeme == ")"){
             match(SEP); // consome ')'
         }else{
-            error("esperado ')' após expressão");
+            error("expressao");
         }
     }
     else{
-        error("fator inválido em expressão");
+        error("fator invalido em expressao");
     }
 }
 

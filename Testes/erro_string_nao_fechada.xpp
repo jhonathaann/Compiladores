@@ -1,0 +1,8 @@
+// erro: string naoo fechada
+class Teste7 {
+    string nome;
+    
+    constructor() {
+        nome = "dfejhfoe;
+    }
+}

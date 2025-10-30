@@ -1,0 +1,9 @@
+// erro: falta ponto e virgula apos atribuicao
+class Teste {
+    int x;
+    
+    constructor() {
+        x = 10
+        print x;
+    }
+}

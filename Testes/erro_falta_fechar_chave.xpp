@@ -1,0 +1,7 @@
+// erro: falta fechar chave da classe
+class Teste {
+    int x;
+    
+    constructor() {
+        x = 10;
+    }

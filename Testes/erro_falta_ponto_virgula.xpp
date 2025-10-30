@@ -1,0 +1,8 @@
+// erro: falta ; depois da declaracao da variavel
+class Teste {
+    int x
+    
+    constructor() {
+        x = 10;
+    }
+}

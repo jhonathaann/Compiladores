@@ -1,0 +1,8 @@
+// erro: operador invalido
+class Teste8 {
+    int x;
+    
+    def calcular() {
+        x = 10 & 5;
+    }
+}
