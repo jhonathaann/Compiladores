@@ -1,9 +1,10 @@
 #include "scanner.h"    
 
-Scanner::Scanner(string filename)
+Scanner::Scanner(string filename, SymbolTable* st)
 {
     pos = 0;    // Começa na primeira posição do texto
     line = 1;   // Começa na primeira linha
+    symbolTable = st; // armazena a referencia a tabela de simbolos
 
     
     ifstream inputFile(filename, ios::in);
@@ -27,27 +28,18 @@ Scanner::Scanner(string filename)
 }
 
 
-// verifica se o lexema bate com alguma palavra reservada
+// verifica se o lexema bate com alguma palavra reservada usando a tabela de símbolos
 int Scanner::isKeyword(string lexeme)
 {
-    if (lexeme == "class") return CLASS;
-    if (lexeme == "int") return INT;
-    if (lexeme == "float") return FLOAT;
-    if (lexeme == "string") return STRING;
-    if (lexeme == "if") return IF;
-    if (lexeme == "else") return ELSE;
-    if (lexeme == "while") return WHILE;
-    if (lexeme == "def") return DEF;
-    if (lexeme == "new") return NEW;
-    if (lexeme == "return") return RETURN;
-    if (lexeme == "print") return PRINT;
-    if (lexeme == "read") return READ;
-    if (lexeme == "main") return MAIN;
-    if (lexeme == "extends") return EXTENDS;
-    if (lexeme == "constructor") return CONSTRUCTOR;
-    if (lexeme == "for") return FOR;
-    if (lexeme == "break") return BREAK;
-    if (lexeme == "super") return SUPER;
+    // busca o lexema na tabela de simbolos
+    STEntry* entry = symbolTable->get(lexeme);
+    
+    // se encontrou, é uma palavra reservada
+    if (entry != 0 && entry->reserved) {
+        return entry->token->name;
+    }
+    
+    // cc, é um ID
     return ID;
 }
 

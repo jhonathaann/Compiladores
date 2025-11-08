@@ -3,8 +3,8 @@
 // criando o objeto scanner (da analise lexica)
 Parser::Parser(string input){
     currentST = globalST = new SymbolTable();
-    initSimbolTable(); // Inicializa a tabela de símbolos com as palavras reservadas
-    scanner = new Scanner(input);
+    initSimbolTable(); // inicializa a tabela de simbolos com as palavras reservadas
+    scanner = new Scanner(input, globalST); // passa a tabela de simbolos global ao scanner
 }
 
 void
