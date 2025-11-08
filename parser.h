@@ -1,4 +1,5 @@
 #include "scanner.h"
+#include <deque>
 
 class Parser{
     private:
@@ -6,8 +7,11 @@ class Parser{
         Token* lToken;  // l --> lookahead
         SymbolTable* globalST;
         SymbolTable* currentST;
+        std::deque<Token*> laBuffer; // buffer para lookahead adicional 
 
         void advance();
+        void ensureLA(int n); // garante que ha pelo menos n tokens no buffer
+        Token* nTokenBuffer(int n);   // retorna o token que esta na posicao n do buffer, sem connsumir
         void match(int);  // verifica se o token passado como parametro (atual) casa com alguma producao da gramatica
 
     public:

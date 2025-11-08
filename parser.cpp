@@ -9,7 +9,32 @@ Parser::Parser(string input){
 
 void
 Parser::advance(){
-    lToken = scanner->nextToken();
+    // Se houver tokens armazenados no buffer de lookahead, usa o primeiro
+    if (!laBuffer.empty()){
+        lToken = laBuffer.front();
+        laBuffer.pop_front();
+    }else{
+        lToken = scanner->nextToken();
+    }
+}
+
+// garante que existam pelo menos n tokens no buffer de lookahead
+void
+Parser::ensureLA(int n){
+    while((int)laBuffer.size() < n){
+        Token* t = scanner->nextToken();
+        laBuffer.push_back(t);
+    }
+}
+
+// retorna o token que esta na posicao n do buffer, sem connsumir
+Token*
+Parser::nTokenBuffer(int n){
+    if(n <= 0){
+      return nullptr;  
+    } 
+    ensureLA(n);
+    return laBuffer[n-1];
 }
 
 void
@@ -182,9 +207,19 @@ void
 Parser::varDeclList(){
     // Tenta processar declarações de variáveis
     // Continua enquanto encontrar INT, STRING ou ID
-    // MAS: se encontrar um padrão de método (Type ID '('), para
-    
+    // MASS: se encontrar um padrao de metodo (Type ID '('), para
     while(lToken->name == INT || lToken->name == STRING || lToken->name == ID){
+        // verifica se o padrao atual é de metodo: (Type ID '(') --> temos que olhar dois tokens a frente
+        if (lToken->name == INT || lToken->name == STRING || lToken->name == ID){
+            Token* t1 = nTokenBuffer(1); // deve ser o identificador (ID)
+            Token* t2 = nTokenBuffer(2); // deve ser o separador '('
+
+            // verifica se é um padrao de metodo
+            if (t1 != nullptr && t1->name == ID && t2 != nullptr && t2->name == SEP && t2->lexeme == "("){
+                break;
+            }
+        }
+
         varDecl();
     }
 }
